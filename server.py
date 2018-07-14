@@ -1,26 +1,38 @@
 from flask import Flask
+from statistics import median
 import RPi.GPIO as GPIO
 import time
+
+TRIG = 23
+ECHO = 24
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return str(getDistance())
+    return str(getAverageDistance())
 
-def getDistance():
+def getAverageDistance():
     
     GPIO.setmode(GPIO.BCM)
-    
-    TRIG = 23
-    ECHO = 24
 
     GPIO.setup(TRIG, GPIO.OUT)
     GPIO.setup(ECHO, GPIO.IN)
     GPIO.output(TRIG, False)
 
-    #time delay to settle sensor
-    time.sleep(0.5)
+    #measure distance 8 times
+    distances = []
+    for i in range(0, 9):
+        distances.append(getDistance())
+
+    #take median distance
+    averageDistance = median(distances)
+
+    GPIO.cleanup()
+
+    return averageDistance
+
+def getDistance():
 
     #send trigger pulse
     GPIO.output(TRIG, True)
@@ -41,8 +53,6 @@ def getDistance():
     #calculate distance using the speed of sound at 343m/s
     distance = pulseDuration * 17150
     distance = round(distance, 2)
-
-    GPIO.cleanup()
 
     return distance
 
