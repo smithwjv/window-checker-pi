@@ -13,20 +13,23 @@ def index():
     return str(getAverageDistance())
 
 def getAverageDistance():
-    
+
     GPIO.setmode(GPIO.BCM)
 
     GPIO.setup(TRIG, GPIO.OUT)
     GPIO.setup(ECHO, GPIO.IN)
     GPIO.output(TRIG, False)
 
-    #measure distance 8 times
+    #measure distance 5 times
     distances = []
-    for i in range(0, 9):
+    for i in range(0, 5):
         distances.append(getDistance())
 
     #take median distance
     averageDistance = median(distances)
+
+    print(distances)
+    print(averageDistance)
 
     GPIO.cleanup()
 
@@ -34,16 +37,20 @@ def getAverageDistance():
 
 def getDistance():
 
+    time.sleep(0.5)
+
     #send trigger pulse
     GPIO.output(TRIG, True)
     time.sleep(0.00001)
     GPIO.output(TRIG, False)
 
     #store last low timestamp
+    pulseStart = 0
     while GPIO.input(ECHO) == 0:
         pulseStart = time.time()
 
     #store last high timestamp
+    pulseEnd = 0
     while GPIO.input(ECHO) == 1:
         pulseEnd = time.time()
 
